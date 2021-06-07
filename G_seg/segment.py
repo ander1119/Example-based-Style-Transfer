@@ -81,10 +81,18 @@ def main(input_dir, target_class, show, conf_threshold, reprocess):
     model.eval()
 
     trimaps_path = os.path.join(input_dir, "trimaps")
-    masks_path = os.path.join(input_dir, "masks")
+    masks_path = os.path.join(input_dir, "person_masks")
+    segmentations_path = os.path.join(input_dir, "segmentation_images")
+    head_masks_path = os.path.join(input_dir, "head_masks")
+    skin_masks_path = os.path.join(input_dir, "skin_masks")
+    landmark_images_path = os.path.join(input_dir, "landmark_images")
     # head_trimaps_path = os.path.join(input_dir, "head_trimaps_path")
     os.makedirs(trimaps_path, exist_ok=True)
     os.makedirs(masks_path, exist_ok=True)
+    os.makedirs(segmentations_path, exist_ok=True)
+    os.makedirs(head_masks_path, exist_ok=True)
+    os.makedirs(skin_masks_path, exist_ok=True)
+    os.makedirs(landmark_images_path, exist_ok=True)
     # os.makedirs(head_trimaps_path, exist_ok=True)
 
     images_list = os.listdir(input_dir)
@@ -186,8 +194,7 @@ def main(input_dir, target_class, show, conf_threshold, reprocess):
         landmark_image = image.copy()
         for i in range(preds.shape[0]):
             cv2.circle(landmark_image, (int(preds[i][0]), int(preds[i][1])), 5, (255, 0, 0), -1)
-        plt.imshow(landmark_image)
-        plt.show()
+        cv2.imwrite(os.path.join(landmark_images_path, filename), landmark_image)
 
         col_arr = np.arange(image.shape[0])
         col_arr = np.transpose(np.tile(col_arr, (image.shape[1], 1)))
@@ -210,13 +217,14 @@ def main(input_dir, target_class, show, conf_threshold, reprocess):
 
         head_mask = cv2.bitwise_and(mask, cv2.bitwise_not(head_mask))
         head_image = cv2.bitwise_and(image, image, mask=head_mask)
+        cv2.imwrite(os.path.join(head_masks_path, filename), head_mask)
 
         # plt.imshow(head_mask)
         # plt.show()
-        show_head = head_image.copy()
-        show_head[show_head.sum(axis=2) == 0] = 255
-        plt.imshow(show_head)
-        plt.show()
+        # show_head = head_image.copy()
+        # show_head[show_head.sum(axis=2) == 0] = 255
+        # plt.imshow(show_head)
+        # plt.show()
 
         print("segmenting skin of {}".format(filename))
 
@@ -226,11 +234,12 @@ def main(input_dir, target_class, show, conf_threshold, reprocess):
         mask_YCrCb = cv2.inRange(image_YCrCb, (0, 138, 67), (255,173,133)) 
         skin_mask = cv2.bitwise_and(mask_hsv, mask_YCrCb, mask = head_mask)
         skin_image = cv2.bitwise_and(image, image, mask = skin_mask)
+        cv2.imwrite(os.path.join(skin_masks_path, filename), skin_mask)
 
-        show_skin = skin_image.copy()
-        show_skin[show_skin.sum(axis=2) == 0] = 255
-        plt.imshow(show_skin)
-        plt.show()
+        # show_skin = skin_image.copy()
+        # show_skin[show_skin.sum(axis=2) == 0] = 255
+        # plt.imshow(show_skin)
+        # plt.show()
 
         print("segmenting other features of {}".format(filename))
 
@@ -276,10 +285,11 @@ def main(input_dir, target_class, show, conf_threshold, reprocess):
         cv2.line(result_image, tuple(preds[27]), tuple(preds[30]), color_dict['nose'], 4)
         # cv2.fillPoly(result_image, [lip], color_dict['lip'])
         
-        _, ax = plt.subplots(1, 2)
-        ax[0].imshow(head_image)
-        ax[1].imshow(result_image)
-        plt.show()
+        cv2.imwrite(os.path.join(segmentations_path, filename), result_image)
+        # _, ax = plt.subplots(1, 2)
+        # ax[0].imshow(head_image)
+        # ax[1].imshow(result_image)
+        # plt.show()
 
 
 
