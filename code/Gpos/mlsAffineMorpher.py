@@ -38,7 +38,7 @@ def mls_affine_deformation(styleImg, targetImg, p, q, alpha=2, density=1):
     p_reshaped = p.reshape((p.shape[0], 2, 1, 1))                      # [68, 2, 1, 1]
     q_reshaped = q.reshape((q.shape[0], 2, 1, 1))
     w = 1.0 / np.sum((p_reshaped - v_reshaped) ** 2, axis=1)**alpha     # [68, height, width]
-    w[ w == np.inf ] = 2**64 - 1
+    w[ w == np.inf ] = 2**32 - 1
     ## p_star, q_star, p_hat, q_hat
     w_sum = np.sum(w, axis=0)
     w_p = np.sum(w * p_reshaped.transpose(1, 0, 2, 3), axis=1)
@@ -122,21 +122,25 @@ if __name__ == "__main__":
     image, target = cv2.imread(style_img), cv2.imread(input_img)
     style_name = os.path.basename(style_img).split('.')[0]
     input_name = os.path.basename(input_img).split('.')[0]
-    if os.path.exists('./%s_%s_lm.pkl' % (style_name, input_name)):
-        with open('./%s_%s_lm.pkl' % (style_name, input_name), 'rb') as f:
-            pkl = pickle.load(f)
-            style_lm = pkl['style']
-            input_lm = pkl['input']
-    else:
-        fa = FaceAlignment(LandmarksType._2D, device='cpu', flip_input=False)
-        style_lm = fa.get_landmarks(image)[0]
-        input_lm = fa.get_landmarks(target)[0]
-        with open('./%s_%s_lm.pkl' % (style_name, input_name),
-                    'wb') as f:
-            pickle.dump({
-                'style': style_lm,
-                'input': input_lm
-            }, f, protocol=2)
+    # if os.path.exists('./%s_%s_lm.pkl' % (style_name, input_name)):
+    #     with open('./%s_%s_lm.pkl' % (style_name, input_name), 'rb') as f:
+    #         pkl = pickle.load(f)
+    #         style_lm = pkl['style']
+    #         input_lm = pkl['input']
+    # else:
+    #     fa = FaceAlignment(LandmarksType._2D, device='cpu', flip_input=False)
+    #     style_lm = fa.get_landmarks(image)[0]
+    #     input_lm = fa.get_landmarks(target)[0]
+    #     with open('./%s_%s_lm.pkl' % (style_name, input_name),
+    #                 'wb') as f:
+    #         pickle.dump({
+    #             'style': style_lm,
+    #             'input': input_lm
+    #         }, f, protocol=2)
+
+    fa = FaceAlignment(LandmarksType._2D, device='cpu', flip_input=False)
+    style_lm = fa.get_landmarks(image)[0]
+    input_lm = fa.get_landmarks(target)[0]
     p = np.array(style_lm)
     q = np.array(input_lm)
     after_img, vx, vy = mls_affine_deformation(image, target, p, q, alpha=2, density=1)
