@@ -26,7 +26,7 @@ def draw(img):
 
 def mls_affine_deformation(styleImg, targetImg, p, q, alpha=2, density=1):
     height, width = styleImg.shape[0], styleImg.shape[1]
-    allX, allY = np.linspace(0, width-1, num=width), np.linspace(0, height-1, num=height)
+    allX, allY = np.linspace(0, width, num=width), np.linspace(0, height, num=height)
     vy, vx = np.meshgrid(allX, allY)
     vx, vy = vx.reshape(1, height, width), vy.reshape(1, height, width)
 
