@@ -105,10 +105,19 @@ def mls_affine_deformation(styleImg, targetImg, p, q, alpha=2, density=1):
     return transformed_image, transformers[0].astype(np.int16), transformers[1].astype(np.int16)
 
 if __name__ == "__main__":
+    # style_dir = sys.argv[1]
+    # style_img = sys.argv[1]+"/"+sys.argv[2]
+    # input_dir = sys.argv[3]
+    # input_img = sys.argv[3]+"/"+sys.argv[4]
+
     style_dir = sys.argv[1]
     style_img = sys.argv[1]+"/"+sys.argv[2]
+    style_mask = sys.argv[1]+"/head_masks/"+sys.argv[2]
     input_dir = sys.argv[3]
     input_img = sys.argv[3]+"/"+sys.argv[4]
+    input_mask = sys.argv[3] + "/head_masks/"+sys.argv[4]
+    style_mask = np.float32(cv2.imread(style_mask))
+    input_mask = np.float32(cv2.imread(input_mask))
     # style_img, input_img = "./style2.jpg", "./style1.jpg"
     image, target = cv2.imread(style_img), cv2.imread(input_img)
     style_name = os.path.basename(style_img).split('.')[0]
@@ -136,8 +145,11 @@ if __name__ == "__main__":
     output_ori = cv2.resize(output_ori, (width,height))
     # draw(output_ori)
     output_des = output_ori.copy()
+    tmp_mask = style_mask.copy()
     new_gridY, new_gridX = np.meshgrid((np.arange(width)).astype(np.int16),  (np.arange(height)).astype(np.int16))
     output_des[new_gridX, new_gridY] = output_ori[vx, vy]
+    tmp_mask[new_gridX, new_gridY] = style_mask[vx, vy]
+    after_img[tmp_mask == 0] = 0
     # print(vx)
     # print(vy)
     ## 視覺化
@@ -145,6 +157,6 @@ if __name__ == "__main__":
     # cv2.imwrite(style_dir + "/" + "G_pos/" + sys.argv[2], output_ori)
 
     ## GOGO
-    cv2.imwrite(input_dir + "/" + "G_pos/" + sys.argv[4], image)
-    cv2.imwrite(style_dir + "/" + "G_pos/" + sys.argv[2], after_img)
+    cv2.imwrite(style_dir  + "/" + "G_pos/" + sys.argv[2], image)
+    cv2.imwrite(input_dir  + "/" + "G_pos/" + sys.argv[4], after_img)
     print("end")
