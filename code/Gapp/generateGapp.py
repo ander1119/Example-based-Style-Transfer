@@ -53,4 +53,4 @@ if __name__ == '__main__':
     matched = localMatching(warped, input_img, style_mask, input_mask, vx, vy)
     matched = replaceBackground(matched, style_img, input_img, style_mask, input_mask, vx, vy)
     cv2.imwrite(style_dir+"/"+"G_app/"+sys.argv[2], style_img)
-    cv2.imwrite(input_dir+"/"+"G_app/"+sys.argv[4], cv2.cvtColor(np.float32(matched), cv2.COLOR_BGR2RGB))
+    cv2.imwrite(input_dir+"/"+"G_app/"+sys.argv[4], matched)

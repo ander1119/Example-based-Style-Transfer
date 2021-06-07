@@ -105,4 +105,4 @@ def replaceBackground(matched, style, input, style_mask, input_mask, vx, vy):
     # plt.tight_layout(w_pad=0.1)
     # plt.show()
     # imsave('output/temp.jpg', style.astype(int))
-    return output
+    return matched
