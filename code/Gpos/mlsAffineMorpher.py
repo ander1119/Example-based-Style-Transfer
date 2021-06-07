@@ -126,6 +126,6 @@ if __name__ == "__main__":
     output_des = output_ori.copy()
     new_gridY, new_gridX = np.meshgrid((np.arange(width)).astype(np.int16),  (np.arange(height)).astype(np.int16))
     output_des[new_gridX, new_gridY] = output_ori[vx, vy]
-    cv2.imwrite(input_dir + "/" + "G_pos/" + sys.argv[2], output_ori)
-    cv2.imwrite(style_dir + "/" + "G_pos/" + sys.argv[4], output_des)
+    cv2.imwrite(input_dir + "/" + "G_pos/" + sys.argv[4], output_des)
+    cv2.imwrite(style_dir + "/" + "G_pos/" + sys.argv[2], output_ori)
     print("end")
