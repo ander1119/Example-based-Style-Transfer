@@ -49,8 +49,10 @@ if __name__ == '__main__':
     height, width, c = input_img.shape
     new_gridY, new_gridX = np.meshgrid((np.arange(width)).astype(np.int16), 
                                         (np.arange(height)).astype(np.int16))
-    style_mask[new_gridX, new_gridY] = style_mask[vy, vx]
-    matched = localMatching(warped, input_img, style_mask, input_mask, vx, vy)
+    style_mask_copy = style_mask.copy()                                   
+    style_mask_copy[new_gridX, new_gridY] = style_mask[vy, vx]
+    matched = localMatching(warped, input_img, style_mask_copy, input_mask, vx, vy)
     matched = replaceBackground(matched, style_img, input_img, style_mask, input_mask, vx, vy)
+    style_img[style_mask == 0] = 0
     cv2.imwrite(style_dir+"/"+"G_app/"+sys.argv[2], style_img)
     cv2.imwrite(input_dir+"/"+"G_app/"+sys.argv[4], matched)

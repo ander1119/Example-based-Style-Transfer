@@ -141,8 +141,8 @@ if __name__ == "__main__":
     ## 視覺化
     # cv2.imwrite(input_dir + "/" + "G_pos/" + sys.argv[4], output_des)
     # cv2.imwrite(style_dir + "/" + "G_pos/" + sys.argv[2], output_ori)
-
     ## GOGO
+    image[style_mask == 0] = 0
     cv2.imwrite(style_dir  + "/" + "G_pos/" + sys.argv[2], image)
     cv2.imwrite(input_dir  + "/" + "G_pos/" + sys.argv[4], after_img)
     print("end")
