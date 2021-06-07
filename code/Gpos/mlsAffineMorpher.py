@@ -117,15 +117,20 @@ if __name__ == "__main__":
     p = np.array(style_lm)
     q = np.array(input_lm)
     after_img, vx, vy = mls_affine_deformation(image, target, p, q, alpha=2, density=1)
-    # draw(after_img)
-    output_ori = cv2.imread("./code/Gpos/sample.png")
-    # print(output_ori)
-    # print("fuck?")
+    output_ori = cv2.imread("./code/Gpos/sample2.png")
     height, width = after_img.shape[0], after_img.shape[1]
     output_ori = cv2.resize(output_ori, (width,height))
+    # draw(output_ori)
     output_des = output_ori.copy()
     new_gridY, new_gridX = np.meshgrid((np.arange(width)).astype(np.int16),  (np.arange(height)).astype(np.int16))
     output_des[new_gridX, new_gridY] = output_ori[vx, vy]
-    cv2.imwrite(input_dir + "/" + "G_pos/" + sys.argv[4], output_des)
-    cv2.imwrite(style_dir + "/" + "G_pos/" + sys.argv[2], output_ori)
+    # print(vx)
+    # print(vy)
+    ## 視覺化
+    # cv2.imwrite(input_dir + "/" + "G_pos/" + sys.argv[4], output_des)
+    # cv2.imwrite(style_dir + "/" + "G_pos/" + sys.argv[2], output_ori)
+
+    ## GOGO
+    cv2.imwrite(input_dir + "/" + "G_pos/" + sys.argv[4], image)
+    cv2.imwrite(style_dir + "/" + "G_pos/" + sys.argv[2], after_img)
     print("end")
