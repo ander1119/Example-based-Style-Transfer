@@ -1,10 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 import os
 import cv2
 import pickle
 from face_alignment import FaceAlignment, LandmarksType
 import sys
+def parse_args():
+    parser = argparse.ArgumentParser(description="mlsAffineMorpher")
+    parser.add_argument(
+        "-i",
+        "--input_dir",
+        type=str,
+        required=True,
+        help="Directory of input image",
+    )
+
+    args = parser.parse_args()
+    return args
+
 def draw(img):
     plt.plot()
     plt.imshow(img)
