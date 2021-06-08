@@ -11,7 +11,7 @@ def draw(img):
     plt.imshow(img)
     plt.show()
 
-def mls_affine_deformation(styleImg, targetImg, p, q, alpha=2, density=1):
+def mls_affine_deformation(styleImg, targetImg, p, q, alpha=0.8, density=1):
     height, width = styleImg.shape[0], styleImg.shape[1]
     allX, allY = np.linspace(0, width, num=width), np.linspace(0, height, num=height)
     vy, vx = np.meshgrid(allX, allY)
