@@ -27,7 +27,7 @@ def localMatching(style_img, input_img, style_mask, input_mask, vx, vy):
     tmpStyle[style_mask == 0], tmpInput[input_mask == 0] = 0, 0
     height, width, c = tmpInput.shape
     print(tmpInput.shape)
-    n_layer = 7                               # 層數
+    n_layer = 10                               # 層數
     L_style, L_input = [], []                              # Laplacian stack of style and input              
     for i in range(n_layer):
         if i == 0:

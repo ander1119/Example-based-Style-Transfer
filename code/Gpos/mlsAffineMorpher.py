@@ -6,25 +6,39 @@ import cv2
 import pickle
 from face_alignment import FaceAlignment, LandmarksType
 import sys
-def parse_args():
+def myArgsParser():
     parser = argparse.ArgumentParser(description="mlsAffineMorpher")
     parser.add_argument(
-        "-i",
+        "-id",
         "--input_dir",
         type=str,
-        required=True,
         help="Directory of input image",
+        required=True
     )
-
+    parser.add_argument(
+        "-im",
+        "--input_img",
+        type=str,
+        help="One input image"
+    )
+    parser.add_argument(
+        "-sd",
+        "--style_dir",
+        type=str,
+        help="Directory of style image",
+        required=True
+    )
+    parser.add_argument(
+        "-sm",
+        "--style_img",
+        type=str,
+        help="One style image"
+    )
     args = parser.parse_args()
+    # print(args)
     return args
 
-def draw(img):
-    plt.plot()
-    plt.imshow(img)
-    plt.show()
-
-def mls_affine_deformation(styleImg, targetImg, p, q, alpha=2, density=1):
+def mls_affine_deformation(styleImg, targetImg, p, q, alpha=0.8, density=1):
     height, width = styleImg.shape[0], styleImg.shape[1]
     allX, allY = np.linspace(0, width, num=width), np.linspace(0, height, num=height)
     vy, vx = np.meshgrid(allX, allY)
@@ -105,62 +119,41 @@ def mls_affine_deformation(styleImg, targetImg, p, q, alpha=2, density=1):
     return transformed_image, transformers[0].astype(np.int16), transformers[1].astype(np.int16)
 
 if __name__ == "__main__":
-    # style_dir = sys.argv[1]
-    # style_img = sys.argv[1]+"/"+sys.argv[2]
-    # input_dir = sys.argv[3]
-    # input_img = sys.argv[3]+"/"+sys.argv[4]
-
-    style_dir = sys.argv[1]
-    style_img = sys.argv[1]+"/"+sys.argv[2]
-    style_mask = sys.argv[1]+"/head_masks/"+sys.argv[2]
-    input_dir = sys.argv[3]
-    input_img = sys.argv[3]+"/"+sys.argv[4]
-    input_mask = sys.argv[3] + "/head_masks/"+sys.argv[4]
-    style_mask = np.float32(cv2.imread(style_mask))
-    input_mask = np.float32(cv2.imread(input_mask))
-    # style_img, input_img = "./style2.jpg", "./style1.jpg"
-    image, target = cv2.imread(style_img), cv2.imread(input_img)
-    style_name = os.path.basename(style_img).split('.')[0]
-    input_name = os.path.basename(input_img).split('.')[0]
-    # if os.path.exists('./%s_%s_lm.pkl' % (style_name, input_name)):
-    #     with open('./%s_%s_lm.pkl' % (style_name, input_name), 'rb') as f:
-    #         pkl = pickle.load(f)
-    #         style_lm = pkl['style']
-    #         input_lm = pkl['input']
-    # else:
-    #     fa = FaceAlignment(LandmarksType._2D, device='cpu', flip_input=False)
-    #     style_lm = fa.get_landmarks(image)[0]
-    #     input_lm = fa.get_landmarks(target)[0]
-    #     with open('./%s_%s_lm.pkl' % (style_name, input_name),
-    #                 'wb') as f:
-    #         pickle.dump({
-    #             'style': style_lm,
-    #             'input': input_lm
-    #         }, f, protocol=2)
-
-    fa = FaceAlignment(LandmarksType._2D, device='cpu', flip_input=False)
-    style_lm = fa.get_landmarks(image)[0]
-    input_lm = fa.get_landmarks(target)[0]
-    p = np.array(style_lm)
-    q = np.array(input_lm)
-    after_img, vx, vy = mls_affine_deformation(image, target, p, q, alpha=2, density=1)
-    output_ori = cv2.imread("./code/Gpos/sample2.png")
-    height, width = after_img.shape[0], after_img.shape[1]
-    output_ori = cv2.resize(output_ori, (width,height))
-    # draw(output_ori)
-    output_des = output_ori.copy()
-    tmp_mask = style_mask.copy()
-    new_gridY, new_gridX = np.meshgrid((np.arange(width)).astype(np.int16),  (np.arange(height)).astype(np.int16))
-    output_des[new_gridX, new_gridY] = output_ori[vx, vy]
-    tmp_mask[new_gridX, new_gridY] = style_mask[vx, vy]
-    after_img[tmp_mask == 0] = 0
-    # print(vx)
-    # print(vy)
-    ## 視覺化
-    # cv2.imwrite(input_dir + "/" + "G_pos/" + sys.argv[4], output_des)
-    # cv2.imwrite(style_dir + "/" + "G_pos/" + sys.argv[2], output_ori)
-    ## GOGO
-    image[style_mask == 0] = 0
-    cv2.imwrite(style_dir  + "/" + "G_pos/" + sys.argv[2], image)
-    cv2.imwrite(input_dir  + "/" + "G_pos/" + sys.argv[4], after_img)
-    print("end")
+    args = myArgsParser()
+    style_dir = args.style_dir
+    style_mask = style_dir + "/head_masks/" + args.style_img
+    style_img = style_dir + "/" + args.style_img
+    input_dir = args.input_dir
+    if args.input_img:
+        input_mask = input_dir + "/head_masks/" + args.input_img
+        input_img = input_dir + "/" + args.input_img
+        # print("style_dir", style_dir)
+        # print("style_mask", style_mask)
+        # print("style_img",style_img)
+        # print("input_dir", input_dir)
+        # print("input_mask", input_mask)
+        # print("input_img", input_img)
+        style_mask = np.float32(cv2.imread(style_mask))
+        input_mask = np.float32(cv2.imread(input_mask))
+        image, target = cv2.imread(style_img), cv2.imread(input_img)
+        style_name = os.path.basename(style_img).split('.')[0]
+        input_name = os.path.basename(input_img).split('.')[0]
+        fa = FaceAlignment(LandmarksType._2D, device='cpu', flip_input=False)
+        style_lm = fa.get_landmarks(image)[0]
+        input_lm = fa.get_landmarks(target)[0]
+        p = np.array(style_lm)
+        q = np.array(input_lm)
+        after_img, vx, vy = mls_affine_deformation(image, target, p, q, alpha=2, density=1)
+        output_ori = cv2.imread("./code/Gpos/sample2.png")
+        height, width = after_img.shape[0], after_img.shape[1]
+        output_ori = cv2.resize(output_ori, (width,height))
+        output_des = output_ori.copy()
+        tmp_mask = style_mask.copy()
+        new_gridY, new_gridX = np.meshgrid((np.arange(width)).astype(np.int16),  (np.arange(height)).astype(np.int16))
+        output_des[new_gridX, new_gridY] = output_ori[vx, vy]
+        tmp_mask[new_gridX, new_gridY] = style_mask[vx, vy]
+        after_img[tmp_mask == 0] = 0
+        image[style_mask == 0] = 0
+        cv2.imwrite(style_dir  +"/G_pos/" + args.style_img, image)
+        cv2.imwrite(input_dir  +"/G_pos/" + args.input_img, after_img)
+        print("End of mlsAffineMorpher.")

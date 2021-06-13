@@ -191,8 +191,15 @@ def main(input_dir, target_class, show, conf_threshold, reprocess):
         preds = preds[0]
         head_mask = np.zeros_like(mask)
         head_center = (int(preds[:, 0].mean()), int(preds[:, 1].mean()))
-        
         landmark_image = image.copy()
+        
+        fl = np.polyfit(preds[5:11, 0], preds[5:11, 1], 2) 
+        # pl = np.poly1d(fl)
+        draw_x = np.arange(image.shape[0])
+        draw_y = np.polyval(fl, draw_x)
+        draw_points = (np.asarray([draw_x, draw_y]).T).astype(np.int32)
+        cv2.polylines(landmark_image, [draw_points], False, (0,0,0))
+        
         for i in range(preds.shape[0]):
             cv2.circle(landmark_image, (int(preds[i][0]), int(preds[i][1])), 5, (255, 0, 0), -1)
         cv2.imwrite(os.path.join(landmark_images_path, filename), landmark_image)
@@ -204,17 +211,23 @@ def main(input_dir, target_class, show, conf_threshold, reprocess):
 
         print("cutting neck of {}".format(filename))
 
-        for i in range(4, 12):
-            # cv2.circle(image, (int(preds[i][0]), int(preds[i][1])), 5, (255, 0, 0), -1)
-            # cv2.line(image_mask, (preds[i][0], preds[i][1]), (preds[i+1][0], preds[i+1][1]), 0, 4)
-            new_mask = np.zeros_like(head_mask)
-            m = (preds[i][1] - preds[i+1][1]) / (preds[i][0] - preds[i+1][0])
-            b = -1 * m * preds[i][0] + preds[i][1]
-            side_determination = (row_arr * m - col_arr - m * preds[i][0] + preds[i][1])
-            side_determination *= side_determination[head_center]
-            new_mask[side_determination < 0] = 255
-            new_mask[side_determination >= 0] = 0
-            head_mask = cv2.bitwise_or(head_mask, new_mask)
+        # for i in range(4, 12):
+        #     # cv2.circle(image, (int(preds[i][0]), int(preds[i][1])), 5, (255, 0, 0), -1)
+        #     # cv2.line(image_mask, (preds[i][0], preds[i][1]), (preds[i+1][0], preds[i+1][1]), 0, 4)
+        #     new_mask = np.zeros_like(head_mask)
+        #     m = (preds[i][1] - preds[i+1][1]) / (preds[i][0] - preds[i+1][0])
+        #     b = -1 * m * preds[i][0] + preds[i][1]
+        #     side_determination = (row_arr * m - col_arr - m * preds[i][0] + preds[i][1])
+        #     side_determination *= side_determination[head_center]
+        #     new_mask[side_determination < 0] = 255
+        #     new_mask[side_determination >= 0] = 0
+        #     head_mask = cv2.bitwise_or(head_mask, new_mask)
+
+        new_mask = np.zeros_like(head_mask)
+        side_determination = np.polyval(fl, row_arr)
+        new_mask[col_arr < side_determination] = 0
+        new_mask[col_arr >= side_determination] = 255
+        head_mask = cv2.bitwise_or(head_mask, new_mask)
 
         head_mask = cv2.bitwise_and(mask, cv2.bitwise_not(head_mask))
         head_image = cv2.bitwise_and(image, image, mask=head_mask)
@@ -281,9 +294,9 @@ def main(input_dir, target_class, show, conf_threshold, reprocess):
         cv2.fillConvexPoly(result_image, lip.astype(int), color_dict['lip'])
         cv2.fillConvexPoly(result_image, mouth.astype(int), color_dict['mouth'])
         cv2.fillConvexPoly(result_image, preds[30:36].astype(int), color_dict['nose'])
+        cv2.fillConvexPoly(result_image, preds[[27, 32, 34]].astype(int), color_dict['nose'])
         cv2.fillConvexPoly(result_image, preds[17:22].astype(int), color_dict['eyebrow'])
         cv2.fillConvexPoly(result_image, preds[22:27].astype(int), color_dict['eyebrow'])
-        cv2.line(result_image, tuple(preds[27]), tuple(preds[30]), color_dict['nose'], 4)
         # cv2.fillPoly(result_image, [lip], color_dict['lip'])
         
         cv2.imwrite(os.path.join(segmentations_path, filename), result_image)
